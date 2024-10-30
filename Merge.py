@@ -32,10 +32,7 @@ if uploaded_file is not None:
         display_df = merged_df.groupby('Merged').agg(lambda x: x.iloc[0] if x.nunique() == 1 else list(x))
         
         # Convert any list-type cells to strings to avoid PyArrow issues
-        display_df = display_df.applymap(lambda x: ', '.join(map(str, x)) if isinstance(x, list) else x)
-        
-        # Drop the 'Merged' column used for grouping
-        display_df.drop(columns=['Merged'], inplace=True)
+        display_df = display_df.applymap(lambda x: ', '.join(map(str, x)) if isinstance(x, list) else str(x))
 
         st.write("### Merged DataFrame")
         st.write(display_df)
