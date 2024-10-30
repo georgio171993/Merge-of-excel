@@ -16,28 +16,37 @@ if uploaded_file is not None:
     # Define the column to work on
     column_name = '1_4_10'
     
-    # Step 3: Fill blank cells in the specified column with the previous cell's value
-    df[column_name] = df[column_name].ffill()
+    # Check if the column exists in the uploaded file
+    if column_name in df.columns:
+        # Step 3: Fill blank cells in the specified column with the previous cell's value
+        df[column_name] = df[column_name].ffill()
 
-    st.write("### After Filling Blank Cells")
-    st.write(df)
-    
-    # Step 4: Merge cells with the same value in the specified column for display
-    merged_df = df.copy()
-    merged_df['Merged'] = (df[column_name] != df[column_name].shift()).cumsum()
-    display_df = merged_df.groupby('Merged').agg(lambda x: x.iloc[0] if x.nunique() == 1 else x.tolist())
-    display_df.drop(columns=['Merged'], inplace=True)
-
-    st.write("### Merged DataFrame")
-    st.write(display_df)
-    
-    # Optional: Download the processed file
-    processed_file = df.to_excel("/mnt/data/Processed_File.xlsx", index=False)
-    st.download_button(
-        label="Download Processed File",
-        data=processed_file,
-        file_name="Processed_File.xlsx",
-        mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
-    )
+        st.write("### After Filling Blank Cells")
+        st.write(df)
+        
+        # Step 4: Merge cells with the same value in the specified column for display
+        merged_df = df.copy()
+        merged_df['Merged'] = (df[column_name] != df[column_name].shift()).cumsum()
+        
+        # Group by the 'Merged' column and aggregate other columns
+        display_df = merged_df.groupby('Merged').agg(lambda x: x.iloc[0] if x.nunique() == 1 else x.tolist())
+        
+        # Drop the 'Merged' column used for grouping, if it exists
+        if 'Merged' in display_df.columns:
+            display_df.drop(columns=['Merged'], inplace=True)
+        
+        st.write("### Merged DataFrame")
+        st.write(display_df)
+        
+        # Optional: Download the processed file
+        processed_file = df.to_excel("/mnt/data/Processed_File.xlsx", index=False)
+        st.download_button(
+            label="Download Processed File",
+            data=processed_file,
+            file_name="Processed_File.xlsx",
+            mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+        )
+    else:
+        st.write(f"The column '{column_name}' was not found in the uploaded file. Please check the column name and try again.")
 else:
     st.write("Please upload an Excel file to proceed.")
