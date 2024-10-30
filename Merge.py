@@ -29,12 +29,14 @@ if uploaded_file is not None:
         merged_df['Merged'] = (df[column_name] != df[column_name].shift()).cumsum()
         
         # Group by the 'Merged' column and aggregate other columns
-        display_df = merged_df.groupby('Merged').agg(lambda x: x.iloc[0] if x.nunique() == 1 else x.tolist())
+        display_df = merged_df.groupby('Merged').agg(lambda x: x.iloc[0] if x.nunique() == 1 else list(x))
         
-        # Drop the 'Merged' column used for grouping, if it exists
-        if 'Merged' in display_df.columns:
-            display_df.drop(columns=['Merged'], inplace=True)
+        # Convert any list-type cells to strings to avoid PyArrow issues
+        display_df = display_df.applymap(lambda x: ', '.join(map(str, x)) if isinstance(x, list) else x)
         
+        # Drop the 'Merged' column used for grouping
+        display_df.drop(columns=['Merged'], inplace=True)
+
         st.write("### Merged DataFrame")
         st.write(display_df)
         
