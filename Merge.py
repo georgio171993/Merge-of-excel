@@ -1,33 +1,43 @@
 import streamlit as st
 import pandas as pd
 
-# Load the Excel file
-file_path = '/mnt/data/Questionnaire Answers (4).xlsx'
-df = pd.read_excel(file_path)
+st.title("Excel Column Processing")
 
-# Display the original DataFrame
-st.write("### Original Data")
-st.write(df)
+# Step 1: Upload Excel file
+uploaded_file = st.file_uploader("Upload an Excel file", type=["xlsx"])
 
-# Step 1: Fill blank cells in column `1_4_10` with the previous cell's value
-column_name = '1_4_10'
-df[column_name] = df[column_name].ffill()
+if uploaded_file is not None:
+    # Step 2: Read the uploaded Excel file
+    df = pd.read_excel(uploaded_file)
+    
+    st.write("### Original Data")
+    st.write(df)
+    
+    # Define the column to work on
+    column_name = '1_4_10'
+    
+    # Step 3: Fill blank cells in the specified column with the previous cell's value
+    df[column_name] = df[column_name].ffill()
 
-# Display the DataFrame after filling blank cells
-st.write("### After Filling Blank Cells")
-st.write(df)
+    st.write("### After Filling Blank Cells")
+    st.write(df)
+    
+    # Step 4: Merge cells with the same value in the specified column for display
+    merged_df = df.copy()
+    merged_df['Merged'] = (df[column_name] != df[column_name].shift()).cumsum()
+    display_df = merged_df.groupby('Merged').agg(lambda x: x.iloc[0] if x.nunique() == 1 else x.tolist())
+    display_df.drop(columns=['Merged'], inplace=True)
 
-# Step 2: Merge cells with the same value in the `1_4_10` column
-# Create a new DataFrame for display purposes with grouping
-merged_df = df.copy()
-merged_df['Merged'] = (df[column_name] != df[column_name].shift()).cumsum()
-
-# Group by the 'Merged' column and aggregate other columns
-display_df = merged_df.groupby('Merged').agg(lambda x: x.iloc[0] if x.nunique() == 1 else x.tolist())
-
-# Drop the 'Merged' column used for grouping
-display_df.drop(columns=['Merged'], inplace=True)
-
-# Display the merged DataFrame
-st.write("### Merged DataFrame")
-st.write(display_df)
+    st.write("### Merged DataFrame")
+    st.write(display_df)
+    
+    # Optional: Download the processed file
+    processed_file = df.to_excel("/mnt/data/Processed_File.xlsx", index=False)
+    st.download_button(
+        label="Download Processed File",
+        data=processed_file,
+        file_name="Processed_File.xlsx",
+        mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+    )
+else:
+    st.write("Please upload an Excel file to proceed.")
