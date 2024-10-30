@@ -2,7 +2,7 @@ import streamlit as st
 import pandas as pd
 from io import BytesIO
 
-st.title("Excel Column Processing with Validation Checks")
+st.title("Excel Column Processing with Fill and Validation Checks")
 
 # Step 1: Upload Excel file
 uploaded_file = st.file_uploader("Upload an Excel file", type=["xlsx"])
@@ -35,7 +35,13 @@ if uploaded_file is not None:
     column_1_7_3 = '1_7_3'
     column_1_7_4 = '1_7_4'
     
-    # Check each condition and mark cells that don't meet the criteria
+    # Step 3: Fill blank cells in column 1_4_10 with the previous cell's value
+    df[column_1_4_10] = df[column_1_4_10].ffill()
+
+    st.write("### After Filling Blank Cells")
+    st.write(df)
+    
+    # Step 4: Validate conditions and mark issues
     df['Validation'] = ''  # Column to mark validation issues
 
     for index, row in df.iterrows():
