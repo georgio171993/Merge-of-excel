@@ -88,23 +88,5 @@ if uploaded_file is not None:
     validation_issues = df[df['Validation'] != '']
     st.write(validation_issues)
 
-    # Convert the DataFrame with validation highlights to an Excel file for download
-    output = BytesIO()
-    with pd.ExcelWriter(output, engine='xlsxwriter') as writer:
-        df.to_excel(writer, index=False, sheet_name='Validation_Checks')
-        worksheet = writer.sheets['Validation_Checks']
-        format_highlight = writer.book.add_format({'bg_color': '#FFC7CE', 'font_color': '#9C0006'})
-        
-        # Apply highlighting to cells in column 1_4_10 where there are validation issues
-        for idx in validation_issues.index:
-            worksheet.write(f'{column_1_4_10}{idx+2}', validation_issues.at[idx, column_1_4_10], format_highlight)
-    
-    # Download button
-    st.download_button(
-        label="Download Validation Results",
-        data=output.getvalue(),
-        file_name="Validation_Checks.xlsx",
-        mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
-    )
 else:
     st.write("Please upload an Excel file to proceed.")
