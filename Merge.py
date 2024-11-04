@@ -15,6 +15,10 @@ if uploaded_file is not None:
     st.write(df)
     
     # Define column names for easier access
+    column_1_4_4 = '1_4_4'
+    column_1_5_3 = '1_5_3'
+    column_1_5_3_1 = '1_5_3_1'
+    column_1_5_4 = '1_5_4'
     column_1_4_10 = '1_4_10'
     column_1_5_8 = '1_5_8'
     column_1_5_9 = '1_5_9'
@@ -78,7 +82,24 @@ if uploaded_file is not None:
         # Condition 8: For indirect users, if 1_7_3 is 'Yes', then 1_7_4 should not be empty
         if row[column_1_7_3] == 'Yes' and pd.isna(row[column_1_7_4]):
             issues.append(f"{column_1_4_10} violates condition 8")
+
         
+        # Condition 9: If 1_4_4 is "Direct", then 1_5_3 should not be blank
+        if row[column_1_4_4] == "Direct" and pd.isna(row[column_1_5_3]):
+            issues.append(f"{column_1_4_4} is 'Direct', but {column_1_5_3} is blank")
+
+        # Condition 10: If 1_4_4 is "Indirect", then 1_5_3 should be blank
+        if row[column_1_4_4] == "Indirect" and not pd.isna(row[column_1_5_3]):
+            issues.append(f"{column_1_4_4} is 'Indirect', but {column_1_5_3} is not blank")
+
+        # Condition 11: If 1_5_3 is "Specific commercial reference, please precise", then 1_5_3_1 should not be blank
+        if row[column_1_5_3] == "Specific commercial reference, please precise" and pd.isna(row[column_1_5_3_1]):
+            issues.append(f"{column_1_5_3} requires {column_1_5_3_1} to be filled")
+
+        # Condition 12: If 1_5_3 is "I don't know my specific commercial reference", then 1_5_4 should not be blank
+        if row[column_1_5_3] == "I don't know my specific commercial reference" and pd.isna(row[column_1_5_4]):
+            issues.append(f"{column_1_5_3} requires {column_1_5_4} to be filled")
+
         # Mark issues in the 'Validation' column
         if issues:
             df.at[index, 'Validation'] = "; ".join(issues)
